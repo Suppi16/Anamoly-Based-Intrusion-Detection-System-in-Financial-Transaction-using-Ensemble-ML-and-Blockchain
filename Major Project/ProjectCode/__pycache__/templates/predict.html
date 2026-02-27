@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detect Fraud Transaction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+</head>
+
+<body style="background-color: #ececec !important;">
+
+    <div class="d-flex flex-column min-vh-100">
+
+        <nav class="navbar navbar-expand-lg bg-primary border-primary border-bottom">
+            <div class="container-fluid my-1 mx-5">
+                <a class="navbar-brand text-light fw-bold fs-5" href="#">
+                    <i class="fa-solid fa-qrcode"></i> UPI FRAUD</a>
+                <button class="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars text-light"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-light fw-bold" aria-current="page" href="/upload">Upload</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold" href="/forecast">Forecast</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold text-decoration-underline link-offset-2 active"
+                                href="/predict">Detect</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold " href="/transactions">Transactions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white fw-bold" href="/logout">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+
+        {% if success %}
+        <div class="position-fixed top-0 toastae start-50 translate-middle-x p-3" style="z-index: 11">
+            <div id="liveToast1" class="toast bg-success bg-opacity-75 hide" role="alert" aria-live="assertive"
+                aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body ms-auto text-white">
+                        {{success}}
+                    </div>
+                    <button type="button" class="btn-close shadow-none btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-lg-8"> 
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-5">
+
+                            <h3 class="text-primary-emphasis text-center mb-4">
+                                Detect Fraud Transactions
+                            </h3>
+
+                            <form method="post" id="predictform">
+                                <div class="row justify-content-center mb-3 mt-4 gx-5 gy-4">
+
+                                    <div class="col-md-12 position-relative">
+                                        <label for="uid" class="form-label">Transaction ID:</label>
+                                        <input type="text" class="form-control shadow-none border-primary" name="uid" id="uid" readonly
+                                            placeholder="Enter Transaction ID" value="{{uid}}">
+                                    </div>
+
+                                    <div class="col-md-6 position-relative">
+                                        <label for="sender" class="form-label">UPI Sender:</label>
+                                        <input type="text" class="form-control shadow-none border-primary" name="sender" id="sender"
+                                            placeholder="Enter UPI Sender" required>
+                                        <div class="invalid-tooltip rounded-3 alertsender">
+                                            * Select Valid UPI Sender
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 position-relative">
+                                        <label for="receiver" class="form-label">UPI Receiver:</label>
+                                        <input type.text" class="form-control shadow-none border-primary" name="receiver" id="receiver"
+                                            placeholder="Enter UPI Receiver" required>
+                                        <div class="invalid-tooltip rounded-3 alertreceiver">
+                                            * Select Valid UPI Receiver
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-12 position-relative">
+                                        <label for="amount" class="form-label">Amount:</label>
+                                        <input type="number" class="form-control shadow-none border-primary" name="amount" id="amount"
+                                            min="0.01" step="0.01" placeholder="Enter Amount" required>
+                                        <div class="invalid-tooltip rounded-3 alertamount">
+                                            * Select Amount
+                                        </div>
+                                    </div>
+
+                                    <div class="w-100"></div>
+
+                                    <div class="col-md-6 position-relative">
+                                        <button type="reset" id="reset" class="btn btn-danger shadow-none w-100">Reset</button>
+                                    </div>
+
+                                    <div class="col-md-6 position-relative">
+                                        <button type="submit" id="submit-btn" class="btn btn-primary shadow-none w-100">Submit</button>
+                                    </div>
+
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Fraud Alert</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h5 class="fraudtext text-danger" style="white-space: pre-line;">
+                            </h5>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="modal-cancel-btn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="modal-proceed-btn">Proceed</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="../static/js/jquery.js"></script>
+    <script src="../static/js/bootstrap.js"></script>
+
+    <script>
+        $(function () {
+
+            $('.toast').toast('show');
+
+            // Handles
+            var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'));
+            var fraudModalText = $(".fraudtext");
+            var submitButton = $("#submit-btn");
+            var proceedButton = $("#modal-proceed-btn");
+            var cancelButton = $("#modal-cancel-btn");
+
+            // 
+            // --- SUBMIT LOGIC (Gatekeeper) ---
+            //
+            $("#predictform").on("submit", function (e) {
+                e.preventDefault();
+                var form = this; 
+
+                var sender = $("#sender").val().trim();
+                var receiver = $("#receiver").val().trim();
+                var amount = $("#amount").val();
+                var testupi = new RegExp("^[a-zA-Z0-9._-]{2,256}@[a-zA-Z0-9]{2,64}$");
+                var isValid = true;
+
+                // Update fields with trimmed values
+                $("#sender").val(sender);
+                $("#receiver").val(receiver);
+
+                if (sender == "" || !testupi.test(sender)) {
+                    $(".alertsender").text(sender == "" ? "* Enter UPI Sender" : "* Enter Valid UPI Sender");
+                    $("#sender").addClass("is-invalid");
+                    isValid = false;
+                } else { $("#sender").removeClass("is-invalid"); }
+
+                if (receiver == "" || !testupi.test(receiver)) {
+                    $(".alertreceiver").text(receiver == "" ? "* Enter UPI Receiver" : "* Enter Valid UPI Receiver");
+                    $("#receiver").addClass("is-invalid");
+                    isValid = false;
+                } else { $("#receiver").removeClass("is-invalid"); }
+
+                if (amount == "" || parseFloat(amount) <= 0) {
+                    $(".alertamount").text(amount == "" ? "* Select Amount" : "* Amount must be positive");
+                    $("#amount").addClass("is-invalid");
+                    isValid = false;
+                } else { $("#amount").removeClass("is-invalid"); }
+
+                if (!isValid) { return; }
+
+                // Server Check
+                submitButton.prop('disabled', true).text('Checking...');
+
+                $.ajax({
+                    url: '/check_pair_velocity',
+                    type: 'POST',
+                    data: JSON.stringify({ sender: sender, receiver: receiver }),
+                    contentType: 'application/json',
+                    success: function (response) {
+                        
+                        // CASE 1: VELOCITY BLOCK
+                        if (response.status === 'velocity_fraud') {
+                            fraudModalText.text("Suspicious Activity: This pair has made multiple transactions in seconds. Transaction Blocked.");
+                            fraudModalText.removeClass('text-warning').addClass('text-danger');
+                            
+                            proceedButton.hide(); 
+                            cancelButton.text("Close");
+                            myModal.show();
+                            submitButton.prop('disabled', false).text('Submit');
+                        
+                        // CASE 2: DOUBLE FRAUD WARNING (Updated Text Here)
+                        } else if (response.status === 'double_fraud') {
+                            // --- CHANGED TEXT HERE ---
+                            var msg = "Result: " + response.result + "\n" +
+                                      "Status: " + response.risk + "\n\n" +
+                                      "Both parties are involved in fraud. Do you want to continue?";
+                            fraudModalText.text(msg);
+                            fraudModalText.removeClass('text-warning').addClass('text-danger');
+                            
+                            // Show Proceed button to allow continuation
+                            proceedButton.show(); 
+                            cancelButton.text("Cancel");
+                            
+                            myModal.show();
+                            submitButton.prop('disabled', false).text('Submit');
+                            
+                            // If they click proceed, submit the form
+                            proceedButton.off('click').on('click', function() {
+                                myModal.hide();
+                                form.submit(); 
+                            });
+
+                        // CASE 3: ALL CLEAR
+                        } else if (response.status === 'ok') {
+                            form.submit(); 
+                        } else {
+                            alert('Error during check.');
+                            submitButton.prop('disabled', false).text('Submit');
+                        }
+                    },
+                    error: function (err) {
+                        alert('Server error.');
+                        submitButton.prop('disabled', false).text('Submit');
+                    }
+                });
+            });
+
+            $("input,textarea,select").on("keydown change", function () {
+                $(this).removeClass("is-invalid")
+            })
+
+            $("#reset").on("click", function () {
+                $("input,textarea,select").removeClass("is-invalid")
+            })
+
+            // 
+            // --- INPUT LOGIC (Warnings) ---
+            //
+            function checkUpi(upiId, fieldName, inputElement) {
+                upiId = upiId.trim();
+                if (!upiId) return; 
+
+                $.ajax({
+                    url: '/check_fraud', 
+                    type: 'POST',
+                    data: JSON.stringify({ upi_id: upiId }), 
+                    contentType: 'application/json',
+                    success: function (response) {
+                        var showModal = false;
+
+                        if (response.status === 'fraud') {
+                            fraudModalText.text(fieldName + " is involved in a fraud. Do you want to continue?");
+                            fraudModalText.removeClass('text-warning').addClass('text-danger');
+                            showModal = true;
+                        } else if (response.status === 'velocity') {
+                            fraudModalText.text("Suspicious: " + fieldName + " has high activity recently. Do you want to continue?");
+                            fraudModalText.removeClass('text-danger').addClass('text-warning'); 
+                            showModal = true;
+                        } else if (response.status === 'unknown') {
+                            fraudModalText.text(fieldName + " is unknown (no history). Do you want to continue?");
+                            fraudModalText.removeClass('text-danger').addClass('text-warning'); 
+                            showModal = true;
+                        }
+
+                        if (showModal) {
+                            proceedButton.show();
+                            cancelButton.text("Cancel");
+                            myModal.show();
+                            
+                            proceedButton.off('click').on('click', function() {
+                                myModal.hide(); 
+                            });
+
+                            cancelButton.off('click').on('click', function() {
+                                $(inputElement).val(''); 
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        console.log('AJAX error:', err);
+                    }
+                });
+            }
+
+            $("#sender").on("change", function () {
+                checkUpi($(this).val(), 'Sender', '#sender');
+            });
+
+            $("#receiver").on("change", function () {
+                checkUpi($(this).val(), 'Receiver', '#receiver');
+            });
+
+        })
+    </script>
+
+</body>
+
+</html>

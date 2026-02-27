@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    
+    <style>
+        /* Styles for the password criteria list */
+        #password-criteria {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none; /* Hidden by default, shown when typing */
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .criteria-item {
+            margin-bottom: 2px;
+            color: #dc3545; /* Red by default */
+            transition: color 0.3s ease;
+        }
+        .criteria-item i {
+            margin-right: 5px;
+            width: 15px;
+        }
+        .criteria-valid {
+            color: #198754; /* Green when valid */
+        }
+    </style>
+</head>
+
+<body style="background-color: #ececec !important;">
+
+    <div class="d-flex flex-column min-vh-100">
+
+        {% if exists %}
+        <div class="position-fixed top-0 toastae start-50 translate-middle-x p-3" style="z-index: 11">
+            <div id="liveToast1" class="toast bg-danger bg-opacity-75 hide" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body ms-auto text-white">User Already Exists!</div>
+                    <button type="button" class="btn-close shadow-none btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="position-fixed top-0 toastae start-50 translate-middle-x p-3" style="z-index: 11">
+            <div id="liveToast1" class="toast bg-success bg-opacity-75 hide" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body ms-auto text-white">Registration Success!</div>
+                    <button type="button" class="btn-close shadow-none btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="position-fixed top-0 toastae start-50 translate-middle-x p-3" style="z-index: 11">
+            <div id="liveToast2" class="toast bg-danger bg-opacity-75 hide" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body ms-auto text-white">Registration Failed!</div>
+                    <button type="button" class="btn-close shadow-none btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="container py-4 my-auto">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-md-12">
+                    <div class="card rounded text-black border border-dark-subtle shadow-sm bg-white">
+                        <div class="row g-0">
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="card-body p-md-5 py-4 mx-md-4 mx-2">
+
+                                    <div class="text-center">
+                                        <h3 class="mb-5 text-decoration-underline link-offset-2 text-dark">Register</h3>
+                                    </div>
+
+                                    <form method="post" id="userregisterform">
+
+                                        <div class="input-group mb-4 position-relative">
+                                            <span class="input-group-text border-dark" id="basic-name"><i class="fa-solid fa-id-card"></i></span>
+                                            <input type="text" name="name" id="name" class="form-control shadow-none border-dark bg-white" placeholder="Name" aria-label="name" aria-describedby="basic-name">
+                                            <div class="invalid-tooltip rounded-3 ">* Enter Name</div>
+                                        </div>
+
+                                        <div class="input-group mb-4 position-relative">
+                                            <span class="input-group-text border-dark" id="basic-email"><i class="fa-solid fa-at"></i></span>
+                                            <input type="text" name="email" id="email" class="form-control shadow-none border-dark bg-white" placeholder="Email" aria-label="Email" aria-describedby="basic-email">
+                                            <button class="btn btn-outline-secondary" type="button" id="send-otp-btn">Send OTP</button>
+                                            <div class="invalid-tooltip rounded-3 alertemail">* Enter Valid Email</div>
+                                        </div>
+                                        
+                                        <div id="otp-section" style="display:none;" class="mb-4">
+                                            <div class="input-group position-relative">
+                                                <span class="input-group-text border-dark"><i class="fa-solid fa-shield-halved"></i></span>
+                                                <input type="text" id="otp" name="otp" class="form-control shadow-none border-dark bg-white" placeholder="Enter OTP">
+                                                <button class="btn btn-outline-success" type="button" id="verify-otp-btn">Verify</button>
+                                                <div class="invalid-tooltip rounded-3" id="otp-tooltip">* Enter OTP</div>
+                                            </div>
+                                            <small id="otp-status" class="form-text"></small>
+                                        </div>
+
+                                        <div class="mb-4 position-relative">
+                                            <div class="input-group">
+                                                <span class="input-group-text border-dark"><i class="fa-solid fa-key"></i></span>
+                                                
+                                                <input type="password" name="password" id="password" class="form-control shadow-none border-dark border-end-0 bg-white" placeholder="Password" aria-label="Password" aria-describedby="basic-password">
+                                                
+                                                <span class="input-group-text border-dark border-start-0 bg-white" onclick="togglePassword()" style="cursor:pointer;">
+                                                    <i class="fas fa-eye"></i>
+                                                </span>
+                                            </div>
+                                            <div class="invalid-tooltip rounded-3 alertpassword">* Enter Password</div>
+
+                                            <div id="password-criteria">
+                                                <div class="criteria-item" id="crit-length"><i class="fas fa-circle-xmark"></i> At least 8 characters</div>
+                                                <div class="criteria-item" id="crit-lower"><i class="fas fa-circle-xmark"></i> At least one lowercase letter</div>
+                                                <div class="criteria-item" id="crit-upper"><i class="fas fa-circle-xmark"></i> At least one uppercase letter</div>
+                                                <div class="criteria-item" id="crit-number"><i class="fas fa-circle-xmark"></i> At least one number</div>
+                                                <div class="criteria-item" id="crit-special"><i class="fas fa-circle-xmark"></i> At least one special character (@$!%*?&)</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group mb-4 position-relative">
+                                            <span class="input-group-text border-dark" id="basic-phone"><i class="fa-solid fa-phone"></i></span>
+                                            <input type="text" name="phone" id="phone" class="form-control shadow-none border-dark bg-white" placeholder="Phone" aria-label="Phone" aria-describedby="basic-phone">
+                                            <div class="invalid-tooltip rounded-3 alertphone">* Enter Valid Phone</div>
+                                        </div>
+
+                                        <div class="text-center pt-1 pb-1">
+                                            <button class="btn btn-outline-dark w-100 shadow-none" type="submit" name="savestudent" id="register-btn" disabled>Register</button>
+                                        </div>
+
+                                        <div class="text-center gap-2 pt-4">
+                                            <a href="/" class="text-decoration-none btn btn-sm rounded-2 btn-dark "><i class="fa-solid fa-house text-white"></i></a>
+                                            |
+                                            <div class="d-inline">
+                                                Already have an account?
+                                                <a href="login" class="text-decoration-none text-white shadow-none rounded-2 btn btn-sm btn-dark ">Login</a>
+                                            </div>
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-none d-md-flex rounded-end">
+                                <img src="../static/images/auth.jpg" class="img-fluid" style="object-fit:cover;" alt="logo">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.input-group-text i.fa-eye, .input-group-text i.fa-eye-slash');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
+
+    <script>
+        $(function () {
+            let isEmailVerified = false;
+            $('.toast').toast('show');
+            
+            // --- LIVE PASSWORD CHECKER ---
+            $('#password').on('focus', function() {
+                $('#password-criteria').slideDown();
+            });
+
+            $('#password').on('blur', function() {
+                // Optional: hide when clicking away if valid, or keep showing
+                 if($(this).val() === "") $('#password-criteria').slideUp();
+            });
+
+            $('#password').on('keyup', function() {
+                const pwd = $(this).val();
+                
+                // Helper function to toggle class
+                function updateCriteria(id, isValid) {
+                    const el = $(id);
+                    const icon = el.find('i');
+                    if (isValid) {
+                        el.removeClass('text-danger').addClass('criteria-valid');
+                        icon.removeClass('fa-circle-xmark').addClass('fa-circle-check');
+                    } else {
+                        el.removeClass('criteria-valid').addClass('text-danger');
+                        icon.removeClass('fa-circle-check').addClass('fa-circle-xmark');
+                    }
+                }
+
+                updateCriteria('#crit-length', pwd.length >= 8);
+                updateCriteria('#crit-lower', /[a-z]/.test(pwd));
+                updateCriteria('#crit-upper', /[A-Z]/.test(pwd));
+                updateCriteria('#crit-number', /\d/.test(pwd));
+                updateCriteria('#crit-special', /[@$!%*?&]/.test(pwd));
+            });
+            // -----------------------------
+
+            // Send OTP click handler
+            $('#send-otp-btn').on('click', function() {
+                const email = $('#email').val();
+                const testemail = new RegExp("[a-z0-9]+@[a-z]+\.[a-z]{2,3}");
+                
+                if (!testemail.test(email)) {
+                    alert('Please enter a valid email address first.');
+                    $("#email").addClass("is-invalid");
+                    return;
+                }
+                $("#email").removeClass("is-invalid");
+                $(this).prop('disabled', true).text('Sending...');
+
+                $.ajax({
+                    url: '/send-otp',
+                    method: 'POST',
+                    data: { email: email },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('OTP sent! Check your email.');
+                            $('#otp-section').slideDown(); 
+                        } else {
+                            alert('Error sending OTP: ' + response.message);
+                        }
+                    },
+                    error: function() { alert('An error occurred. Please try again.'); },
+                    complete: function() {
+                        setTimeout(function() { $('#send-otp-btn').prop('disabled', false).text('Send OTP'); }, 5000);
+                    }
+                });
+            });
+
+            // Verify OTP click handler
+            $('#verify-otp-btn').on('click', function() {
+                const otp = $('#otp').val();
+                if (!otp) {
+                    $('#otp').addClass('is-invalid');
+                    $('#otp-tooltip').text('* Enter OTP');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/verify-otp',
+                    method: 'POST',
+                    data: { otp: otp },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            $('#otp-status').text('Email Verified!').css('color', 'green');
+                            isEmailVerified = true;
+                            $('#register-btn').prop('disabled', false);
+                            $('#otp').prop('disabled', true);
+                            $('#verify-otp-btn').prop('disabled', true);
+                            $('#send-otp-btn').prop('disabled', true);
+                            $('#email').prop('readonly', true); 
+                        } else {
+                            $('#otp-status').text('Invalid OTP.').css('color', 'red');
+                            $('#otp').addClass('is-invalid');
+                            $('#otp-tooltip').text('Invalid OTP.');
+                        }
+                    },
+                    error: function() { $('#otp-status').text('An error occurred.').css('color', 'red'); }
+                });
+            });
+
+            $("#userregisterform").on("submit", function (e) {
+                let phonestat = false;
+                var email = $("#email").val();
+                var password = $("#password").val();
+                var name = $("#name").val();
+                var phone = $("#phone").val();
+                var testemail = new RegExp("[a-z0-9]+@[a-z]+\.[a-z]{2,3}");
+                var testphone = new RegExp("^[6-9][0-9]{9}$");
+
+                if (!isEmailVerified) {
+                    alert('Please verify your email address first.');
+                    e.preventDefault();
+                    return;
+                }
+
+                if (email != "") {
+                    if (!testemail.test(email)) {
+                        $(".alertemail").text("* Enter Valid Email");
+                        $("#email").addClass("is-invalid");
+                        e.preventDefault();
+                    } else { $("#email").removeClass("is-invalid"); }
+                } else {
+                    $(".alertemail").text("* Enter Email");
+                    $("#email").addClass("is-invalid");
+                    e.preventDefault();
+                }
+
+                if (phone != "") {
+                    if (!testphone.test(phone)) {
+                        $(".alertphone").text("* Enter Valid Phone");
+                        $("#phone").addClass("is-invalid");
+                        e.preventDefault();
+                    } else { $("#phone").removeClass("is-invalid"); }
+                } else {
+                    $(".alertphone").text("* Enter Phone");
+                    $("#phone").addClass("is-invalid");
+                    e.preventDefault();
+                }
+
+                // Password check on submit
+                if (password != "") {
+                    const isStrong = 
+                        password.length >= 8 &&
+                        /[a-z]/.test(password) &&
+                        /[A-Z]/.test(password) &&
+                        /\d/.test(password) &&
+                        /[@$!%*?&]/.test(password);
+
+                    if (!isStrong) {
+                        alert("Please ensure your password meets all the criteria listed below."); 
+                        $(".alertpassword").text("Weak Password"); 
+                        $("#password").addClass("is-invalid");
+                        $('#password-criteria').slideDown(); // Ensure list is visible
+                        e.preventDefault(); 
+                    } else {
+                        $("#password").removeClass("is-invalid");
+                    }
+                } else {
+                    $(".alertpassword").text("* Enter Password");
+                    $("#password").addClass("is-invalid");
+                    e.preventDefault();
+                }
+
+                if (name != "") { $("#name").removeClass("is-invalid"); } 
+                else { $("#name").addClass("is-invalid"); e.preventDefault(); }
+            })
+
+            $("input,textarea,select").on("keydown change", function () {
+                $(this).removeClass("is-invalid")
+            })
+        })
+    </script>
+</body>
+</html>
